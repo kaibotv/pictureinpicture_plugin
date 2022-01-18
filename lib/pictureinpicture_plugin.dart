@@ -35,8 +35,9 @@ class PictureinpicturePlugin {
 
   //判断画中画权限
   static Future<bool> pictureInPictureIsSupport() async {
-    final bool isSupoort = await _channel.invokeMethod('PIPisSupport');
-    return isSupoort;
+    final String isSupoort = await _channel.invokeMethod('PIPisSupport');
+    if (isSupoort == '1') return true;
+    return false;
   }
 
   //释放

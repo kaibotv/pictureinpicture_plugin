@@ -80,7 +80,7 @@ static NSString *const kForPlayerItemStatus = @"status";
     [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
     [[AVAudioSession sharedInstance] setActive: YES error: nil];
     ///#等待资源加载好
-    NSString *path = [[NSBundle mainBundle] pathForResource:@"BeginPIP"
+    NSString *path = [[NSBundle bundleForClass:[self class]] pathForResource:@"BeginPIP"
                                                      ofType:@"mp4"];
     
     NSURL *sourceMovieUrl = [NSURL fileURLWithPath:path];
