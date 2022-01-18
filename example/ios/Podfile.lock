@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - pictureinpicture_plugin (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - pictureinpicture_plugin (from `.symlinks/plugins/pictureinpicture_plugin/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  pictureinpicture_plugin:
+    :path: ".symlinks/plugins/pictureinpicture_plugin/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  pictureinpicture_plugin: 6048cb2d6978555e716374f8f795e4b932ace15f
+
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+
+COCOAPODS: 1.11.2
