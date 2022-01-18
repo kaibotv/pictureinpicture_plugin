@@ -33,10 +33,12 @@ FlutterPlugin
     NSString *method=call.method;
     if ([method isEqualToString:@"PIPInt"]) {//初始化
         [[PTVPictureInpicture pictureInpicture] initPTVPicutre:call.arguments];
+        result(@"1");
     }
     else if ([method isEqualToString:@"PIPopen"]){//开启画中画
         NSArray * arguments = call.arguments;
         [[PTVPictureInpicture pictureInpicture] openPictureInPicture:arguments[0] seekToSecond:[arguments[1] intValue]];
+        result(@"1");
     }
     else if ([method isEqualToString:@"PIPisSupport"]){//是否支持画中画
         bool isSupportPIP = [PTVPictureInpicture isSupportPictureInPicture];
@@ -51,6 +53,7 @@ FlutterPlugin
     }
     else if ([method isEqualToString:@"PIPdispost"]){
         [[PTVPictureInpicture pictureInpicture] closePicInPic];
+        result(@"1");
     }
 }
 @end
