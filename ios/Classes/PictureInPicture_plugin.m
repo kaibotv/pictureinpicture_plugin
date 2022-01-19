@@ -24,7 +24,7 @@ FlutterPlugin
         NSString * secondStr = [NSString stringWithFormat:@"%ld",(long)second];
         NSArray * arguments = @[roomId,secondStr];
         [channel invokeMethod:@"restoreUserInterfaceForPIP" arguments:arguments result:^(id  _Nullable result) {
-
+            
         }];
     };
 }
@@ -32,18 +32,30 @@ FlutterPlugin
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result{
     NSString *method=call.method;
     if ([method isEqualToString:@"PIPInt"]) {//初始化
-        [[PTVPictureInpicture pictureInpicture] initPTVPicutre:call.arguments];
-        result(@"1");
+        if (@available(iOS 14.0, *)) {
+            [[PTVPictureInpicture pictureInpicture] initPTVPicutre:call.arguments];
+            result(@"1");
+        }else{
+            result(@"系统版本过低");
+        }
     }
     else if ([method isEqualToString:@"PIPopen"]){//开启画中画
-        NSArray * arguments = call.arguments;
-        [[PTVPictureInpicture pictureInpicture] openPictureInPicture:arguments[0] seekToSecond:[arguments[1] intValue]];
-        result(@"1");
+        if (@available(iOS 14.0, *)) {
+            NSArray * arguments = call.arguments;
+            [[PTVPictureInpicture pictureInpicture] openPictureInPicture:arguments[0] seekToSecond:[arguments[1] intValue]];
+            result(@"1");
+        }else{
+            result(@"系统版本过低");
+        }
     }
     else if ([method isEqualToString:@"PIPisSupport"]){//是否支持画中画
-        bool isSupportPIP = [PTVPictureInpicture isSupportPictureInPicture];
-        NSString * pipStr = [NSString stringWithFormat:@"%d",isSupportPIP];
-        result(pipStr);
+        if (@available(iOS 14.0, *)) {
+            bool isSupportPIP = [PTVPictureInpicture isSupportPictureInPicture];
+            NSString * pipStr = [NSString stringWithFormat:@"%d",isSupportPIP];
+            result(pipStr);
+        }else{
+            result(@"0");
+        }
     }
     else if ([method isEqualToString:@""]){
         
