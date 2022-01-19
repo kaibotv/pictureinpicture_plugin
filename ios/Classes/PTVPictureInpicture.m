@@ -344,9 +344,7 @@ static NSString *const kForPlayerItemStatus = @"status";
 }
 
 - (void)pictureInPictureControllerDidStopPictureInPicture:(AVPictureInPictureController *)pictureInPictureController {
-    if (!_needEnterRoom) {
-        [self _changeToLoadingVideo];
-    }
+    [self closePicInPic];
 }
 
 - (void)pictureInPictureControllerDidStartPictureInPicture:(AVPictureInPictureController *)pictureInPictureController {
