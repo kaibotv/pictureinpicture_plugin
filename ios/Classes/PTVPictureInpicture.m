@@ -81,7 +81,7 @@ static NSString *const kForPlayerItemStatus = @"status";
     [[AVAudioSession sharedInstance] setActive: YES error: nil];
     ///#等待资源加载好
     NSString *path = [[NSBundle bundleForClass:[self class]] pathForResource:@"BeginPIP"
-                                                     ofType:@"mp4"];
+                                                                      ofType:@"mp4"];
     
     NSURL *sourceMovieUrl = [NSURL fileURLWithPath:path];
     AVAsset *movieAsset = [AVURLAsset URLAssetWithURL:sourceMovieUrl options:nil];
@@ -95,7 +95,7 @@ static NSString *const kForPlayerItemStatus = @"status";
     _queuePlayer = [AVQueuePlayer queuePlayerWithItems:@[_beginItem]];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_mediaPlayDidEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:_queuePlayer.currentItem];
     _queuePlayer.actionAtItemEnd = AVPlayerActionAtItemEndNone;
-
+    
     
     _playerLayer = [AVPlayerLayer playerLayerWithPlayer:_queuePlayer];
     _playerLayer.videoGravity = AVLayerVideoGravityResizeAspect;  // 适配视频尺寸
@@ -113,69 +113,112 @@ static NSString *const kForPlayerItemStatus = @"status";
     _playerLayer.frame = [UIScreen mainScreen].bounds;
     [_playerContent.layer addSublayer:_playerLayer];
     
-    UIWindow *window = [UIApplication sharedApplication].keyWindow;
-    [window addSubview:_playerContent];
+    [[self currentViewController].view addSubview:_playerContent];
     
     [_queuePlayer play];
+}
+
+- (UIViewController*)currentViewController{
+    
+    UIViewController* vc = [UIApplication sharedApplication].keyWindow.rootViewController;
+    
+    
+    
+    while (1) {
+        
+        if ([vc isKindOfClass:[UITabBarController class]]) {
+            
+            vc = ((UITabBarController*)vc).selectedViewController;
+            
+        }
+        
+        
+        
+        if ([vc isKindOfClass:[UINavigationController class]]) {
+            
+            vc = ((UINavigationController*)vc).visibleViewController;
+            
+        }
+        
+        
+        
+        if (vc.presentedViewController) {
+            
+            vc = vc.presentedViewController;
+            
+        }else{
+            
+            break;
+            
+        }
+        
+        
+        
+    }
+    
+    
+    
+    return vc;
+    
 }
 
 
 - (void)openPictureInPicture:(NSString *)url seekToSecond:(int)second {
     
-//    if (![[self class] isSupportPictureInPicture]) return;
-//    if (!url || url.length == 0 ) return;
-//    if (![url containsString:@"m3u8"]) return;
-//
-//    [self closePicInPic];
-//
-//    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
-//    [[AVAudioSession sharedInstance] setActive: YES error: nil];
-//
-//    _playerItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:url]];
-//
-//    ///#等待资源加载好
-//    NSString *path = [[NSBundle mainBundle] pathForResource:@"BeginPIP"
-//                                                     ofType:@"mp4"];
-//
-//    NSURL *sourceMovieUrl = [NSURL fileURLWithPath:path];
-//    AVAsset *movieAsset = [AVURLAsset URLAssetWithURL:sourceMovieUrl options:nil];
-//    _beginItem = [AVPlayerItem playerItemWithAsset:movieAsset];
-//
-//
-//    [_playerItem addObserver:self
-//                  forKeyPath:kForPlayerItemStatus
-//                     options:NSKeyValueObservingOptionNew context:nil];// 监听loadedTimeRanges属性
-//
-//    [_beginItem addObserver:self
-//                 forKeyPath:kForPlayerItemStatus
-//                    options:NSKeyValueObservingOptionNew context:nil];// 监听loadedTimeRanges属性
-//
-//
-//    _queuePlayer = [AVQueuePlayer queuePlayerWithItems:@[_beginItem]];
-//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_mediaPlayDidEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:_queuePlayer.currentItem];
-//    _queuePlayer.actionAtItemEnd = AVPlayerActionAtItemEndNone;
-//
-//
-//    _playerLayer = [AVPlayerLayer playerLayerWithPlayer:_queuePlayer];
-//    _playerLayer.videoGravity = AVLayerVideoGravityResizeAspect;  // 适配视频尺寸
-//    _playerLayer.backgroundColor = (__bridge CGColorRef _Nullable)([UIColor blackColor]);
-//
-//    [self _initPicture];
-//
-//    if (!_playerContent) {
-//        _playerContent = [UIView new];
-//        _playerContent.frame = CGRectMake(-10, -10, 1, 1);
-//        _playerContent.alpha = 0.0;
-//        _playerContent.backgroundColor = [UIColor clearColor];
-//        _playerContent.userInteractionEnabled = NO;
-//    }
-//    _playerLayer.frame = CGRectMake(0, 0, 400, 400);
-//    [_playerContent.layer addSublayer:_playerLayer];
-//
-//    UIWindow *window = [UIApplication sharedApplication].keyWindow;
-//    [window addSubview:_playerContent];
-//
-//    [_queuePlayer play];
+    //    if (![[self class] isSupportPictureInPicture]) return;
+    //    if (!url || url.length == 0 ) return;
+    //    if (![url containsString:@"m3u8"]) return;
+    //
+    //    [self closePicInPic];
+    //
+    //    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
+    //    [[AVAudioSession sharedInstance] setActive: YES error: nil];
+    //
+    //    _playerItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:url]];
+    //
+    //    ///#等待资源加载好
+    //    NSString *path = [[NSBundle mainBundle] pathForResource:@"BeginPIP"
+    //                                                     ofType:@"mp4"];
+    //
+    //    NSURL *sourceMovieUrl = [NSURL fileURLWithPath:path];
+    //    AVAsset *movieAsset = [AVURLAsset URLAssetWithURL:sourceMovieUrl options:nil];
+    //    _beginItem = [AVPlayerItem playerItemWithAsset:movieAsset];
+    //
+    //
+    //    [_playerItem addObserver:self
+    //                  forKeyPath:kForPlayerItemStatus
+    //                     options:NSKeyValueObservingOptionNew context:nil];// 监听loadedTimeRanges属性
+    //
+    //    [_beginItem addObserver:self
+    //                 forKeyPath:kForPlayerItemStatus
+    //                    options:NSKeyValueObservingOptionNew context:nil];// 监听loadedTimeRanges属性
+    //
+    //
+    //    _queuePlayer = [AVQueuePlayer queuePlayerWithItems:@[_beginItem]];
+    //    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_mediaPlayDidEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:_queuePlayer.currentItem];
+    //    _queuePlayer.actionAtItemEnd = AVPlayerActionAtItemEndNone;
+    //
+    //
+    //    _playerLayer = [AVPlayerLayer playerLayerWithPlayer:_queuePlayer];
+    //    _playerLayer.videoGravity = AVLayerVideoGravityResizeAspect;  // 适配视频尺寸
+    //    _playerLayer.backgroundColor = (__bridge CGColorRef _Nullable)([UIColor blackColor]);
+    //
+    //    [self _initPicture];
+    //
+    //    if (!_playerContent) {
+    //        _playerContent = [UIView new];
+    //        _playerContent.frame = CGRectMake(-10, -10, 1, 1);
+    //        _playerContent.alpha = 0.0;
+    //        _playerContent.backgroundColor = [UIColor clearColor];
+    //        _playerContent.userInteractionEnabled = NO;
+    //    }
+    //    _playerLayer.frame = CGRectMake(0, 0, 400, 400);
+    //    [_playerContent.layer addSublayer:_playerLayer];
+    //
+    //    UIWindow *window = [UIApplication sharedApplication].keyWindow;
+    //    [window addSubview:_playerContent];
+    //
+    //    [_queuePlayer play];
     if (!url || url.length == 0 ) return;
     if (![url containsString:@"m3u8"]) return;
     // - 播放视频
@@ -203,27 +246,27 @@ static NSString *const kForPlayerItemStatus = @"status";
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *,id> *)change context:(void *)context
 {
-//    if ([keyPath isEqualToString:@"status"]) {
-//
-//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//
-//            if (_queuePlayer.status == AVPlayerStatusReadyToPlay) {
-//                [_queuePlayer play];
-//                if (!_pipViewController.isPictureInPictureActive) {
-//                    [self doPicInPic];
-//                }
-//            } else {
-//                [self closePicInPic];
-//            }
-//
-//        });
-//
-//    }
+    //    if ([keyPath isEqualToString:@"status"]) {
+    //
+    //        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    //
+    //            if (_queuePlayer.status == AVPlayerStatusReadyToPlay) {
+    //                [_queuePlayer play];
+    //                if (!_pipViewController.isPictureInPictureActive) {
+    //                    [self doPicInPic];
+    //                }
+    //            } else {
+    //                [self closePicInPic];
+    //            }
+    //
+    //        });
+    //
+    //    }
     if (object == _beginItem) {
         NSLog(@"// - console [error] ... beginItem %ld", (long)_queuePlayer.status);
     }else {
         // - 如果当前开始使用 _queuePlayer 播放m3u8, 停止播放视频.
-//        [[QIEPlayer shareInstance] stopPlay];
+        //        [[QIEPlayer shareInstance] stopPlay];
         NSLog(@"// - console [error] ... xxxxx");
     }
     
@@ -251,7 +294,7 @@ static NSString *const kForPlayerItemStatus = @"status";
     if (_pipViewController.pictureInPictureActive) {
         [_pipViewController stopPictureInPicture];
     }
-    
+    _pipViewController = nil;
     ///# 释放资源
     _playerItem  = nil;
     _playerLayer = nil;
@@ -282,15 +325,15 @@ static NSString *const kForPlayerItemStatus = @"status";
 
 - (void)pictureInPictureController:(AVPictureInPictureController *)pictureInPictureController restoreUserInterfaceForPictureInPictureStopWithCompletionHandler:(void (^)(BOOL restored))completionHandler {
     
-//    if (_needEnterRoom) {
-//
-//        [self _removePlayerContentView];
-//
-//        if (self.roomID) {
-////####进入直播间
-//        }
-//        [self _removeObserve];
-//    }
+    //    if (_needEnterRoom) {
+    //
+    //        [self _removePlayerContentView];
+    //
+    //        if (self.roomID) {
+    ////####进入直播间
+    //        }
+    //        [self _removeObserve];
+    //    }
     if (_needEnterRoom) {
         NSTimeInterval currentTimeSec = _queuePlayer.currentTime.value / _queuePlayer.currentTime.timescale;
         self.progressSecond = currentTimeSec;
