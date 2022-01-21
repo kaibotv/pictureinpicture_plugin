@@ -8,6 +8,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+
     }
 }
 
@@ -16,6 +17,7 @@ allprojects {
         google()
         jcenter()
     }
+
 }
 
 rootProject.buildDir = '../build'
@@ -28,4 +30,15 @@ subprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+
+ext {
+    compileSdkVersion = 31
+    buildToolsVersion = "31.0.0"
+
+    targetSdkVersion = 31
+
+    versionCode = 800102
+    versionName = "0.8.1.2"
 }
