@@ -23,7 +23,6 @@ import tv.danmaku.ijk.media.player.IMediaPlayer;
 
 
 public class FloatWindowService extends Service {
-
     public static final String ACTION_FOLLOW_TOUCH = "action_follow_touch";
     WindowManager windowManager;
     WindowManager.LayoutParams layoutParams;
@@ -42,10 +41,12 @@ public class FloatWindowService extends Service {
         layoutParams.format = PixelFormat.TRANSPARENT;
         layoutParams.gravity = Gravity.TOP | Gravity.LEFT;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-        layoutParams.width = 300;
-        layoutParams.height = 300;
-        layoutParams.x = 0;
-        layoutParams.y = 0;
+        layoutParams.width = 320;
+        layoutParams.height = 180;
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getMetrics(outMetrics);
+        layoutParams.x =  outMetrics.widthPixels - 320;
+        layoutParams.y = outMetrics.heightPixels - 180 - 150;
     }
     private int mScaledTouchSlop;
 
@@ -119,35 +120,41 @@ public class FloatWindowService extends Service {
         //这里使用的是Demo中提供的AndroidMediaController类控制播放相关操作
 
         final VideoPlayerIJK ijkPlayer = (VideoPlayerIJK) layoutInflater.inflate(R.layout.follow_touch_view,null);
-        ijkPlayer.setVideoPath("http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4");
+        String url = intent.getStringExtra("url");
+        ijkPlayer.setVideoPath(url);
         ijkPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
             @Override
-            public void onPrepared(IMediaPlayer iMediaPlayer) {
-
-                float w = iMediaPlayer.getVideoWidth();
-                float h = iMediaPlayer.getVideoHeight();
+            public void onPrepared(IMediaPlayer mp) {
+                float w = mp.getVideoWidth();
+                float h = mp.getVideoHeight();
                 float scale = w/h;
 
                 FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(320,
                         (int) (320/scale));
+                ijkPlayer.surfaceView.setBackgroundColor(Color.TRANSPARENT);
                 ijkPlayer.surfaceView.setLayoutParams(layoutParams1);
                 layoutParams.width = 320;
                 layoutParams.height =  (int) (320/scale);
                 windowManager.updateViewLayout(ijkPlayer, layoutParams);
-                iMediaPlayer.start();
+                mp.start();
             }
         });
+
         ijkPlayer.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {
             @Override
-            public void onCompletion(IMediaPlayer iMediaPlayer) {
-                iMediaPlayer.seekTo(0);
-                iMediaPlayer.start();
+            public void onCompletion(IMediaPlayer mp) {
+
+                mp.seekTo(0);
+                mp.start();
+
             }
         });
-
         mScaledTouchSlop = ViewConfiguration.get(getApplicationContext()).getScaledTouchSlop();
         ijkPlayer.setOnTouchListener(new FloatingOnTouchListener());
-
+        FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(320,
+                180);
+        ijkPlayer.surfaceView.setBackgroundColor(Color.BLACK);
+        ijkPlayer.surfaceView.setLayoutParams(layoutParams1);
         windowManager.addView(ijkPlayer,layoutParams);
         return super.onStartCommand(intent, flags, startId);
     }
