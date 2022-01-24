@@ -35,7 +35,10 @@ public class VideoPlayerIJK extends FrameLayout {
 
     SurfaceView surfaceView;
 
-    private VideoPlayerListener listener;
+    private IMediaPlayer.OnPreparedListener onPreparedListener;
+    private IMediaPlayer.OnCompletionListener onCompletionListener;
+
+
     private Context mContext;
 
     public VideoPlayerIJK(@NonNull Context context) {
@@ -132,26 +135,34 @@ public class VideoPlayerIJK extends FrameLayout {
             mMediaPlayer.release();
         }
         IjkMediaPlayer ijkMediaPlayer = new IjkMediaPlayer();
-        ijkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_DEBUG);
+        ijkMediaPlayer.setLogLevel(IjkMediaPlayer.IJK_LOG_DEBUG);
 
 //        //开启硬解码
         ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1);
 
         mMediaPlayer = ijkMediaPlayer;
 
-        if (listener != null) {
-            mMediaPlayer.setOnPreparedListener(listener);
-            mMediaPlayer.setOnInfoListener(listener);
-            mMediaPlayer.setOnSeekCompleteListener(listener);
-            mMediaPlayer.setOnBufferingUpdateListener(listener);
-            mMediaPlayer.setOnErrorListener(listener);
+        if (onPreparedListener != null) {
+            mMediaPlayer.setOnPreparedListener(onPreparedListener);
+        }
+        if (onCompletionListener != null) {
+
+            mMediaPlayer.setOnCompletionListener(onCompletionListener);
         }
     }
 
-    public void setListener(VideoPlayerListener listener) {
-        this.listener = listener;
+    public void setOnPreparedListener(IMediaPlayer.OnPreparedListener listener) {
+        this.onPreparedListener = listener;
         if (mMediaPlayer != null) {
             mMediaPlayer.setOnPreparedListener(listener);
+        }
+    }
+
+    public  void  setOnCompletionListener(IMediaPlayer.OnCompletionListener listener) {
+
+        this.onCompletionListener = listener;
+        if (mMediaPlayer != null) {
+            mMediaPlayer.setOnCompletionListener(listener);
         }
     }
 

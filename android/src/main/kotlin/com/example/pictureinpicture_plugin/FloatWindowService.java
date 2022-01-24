@@ -23,6 +23,7 @@ import tv.danmaku.ijk.media.player.IMediaPlayer;
 
 
 public class FloatWindowService extends Service {
+
     public static final String ACTION_FOLLOW_TOUCH = "action_follow_touch";
     WindowManager windowManager;
     WindowManager.LayoutParams layoutParams;
@@ -41,12 +42,10 @@ public class FloatWindowService extends Service {
         layoutParams.format = PixelFormat.TRANSPARENT;
         layoutParams.gravity = Gravity.TOP | Gravity.LEFT;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-        layoutParams.width = 320;
-        layoutParams.height = 180;
-        DisplayMetrics outMetrics = new DisplayMetrics();
-        windowManager.getDefaultDisplay().getMetrics(outMetrics);
-        layoutParams.x =  outMetrics.widthPixels - 320;
-        layoutParams.y = outMetrics.heightPixels - 180 - 150;
+        layoutParams.width = 300;
+        layoutParams.height = 300;
+        layoutParams.x = 0;
+        layoutParams.y = 0;
     }
     private int mScaledTouchSlop;
 
@@ -120,64 +119,35 @@ public class FloatWindowService extends Service {
         //这里使用的是Demo中提供的AndroidMediaController类控制播放相关操作
 
         final VideoPlayerIJK ijkPlayer = (VideoPlayerIJK) layoutInflater.inflate(R.layout.follow_touch_view,null);
-        String url = intent.getStringExtra("url");
-        ijkPlayer.setVideoPath(url);
-        ijkPlayer.setListener(new VideoPlayerListener() {
+        ijkPlayer.setVideoPath("http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4");
+        ijkPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
             @Override
-            public void onBufferingUpdate(IMediaPlayer mp, int percent) {
-            }
+            public void onPrepared(IMediaPlayer iMediaPlayer) {
 
-            @Override
-            public void onCompletion(IMediaPlayer mp) {
-                mp.seekTo(0);
-                mp.start();
-
-
-            }
-
-            @Override
-            public boolean onError(IMediaPlayer mp, int what, int extra) {
-                return false;
-            }
-
-            @Override
-            public boolean onInfo(IMediaPlayer mp, int what, int extra) {
-                return false;
-            }
-
-            @Override
-            public void onPrepared(IMediaPlayer mp) {
-
-                float w = mp.getVideoWidth();
-                float h = mp.getVideoHeight();
+                float w = iMediaPlayer.getVideoWidth();
+                float h = iMediaPlayer.getVideoHeight();
                 float scale = w/h;
 
                 FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(320,
                         (int) (320/scale));
-                ijkPlayer.surfaceView.setBackgroundColor(Color.TRANSPARENT);
                 ijkPlayer.surfaceView.setLayoutParams(layoutParams1);
                 layoutParams.width = 320;
                 layoutParams.height =  (int) (320/scale);
                 windowManager.updateViewLayout(ijkPlayer, layoutParams);
-                mp.start();
-            }
-
-            @Override
-            public void onSeekComplete(IMediaPlayer mp) {
-
-            }
-
-            @Override
-            public void onVideoSizeChanged(IMediaPlayer mp, int width, int height, int sar_num, int sar_den) {
-                //获取到视频的宽和高
+                iMediaPlayer.start();
             }
         });
+        ijkPlayer.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(IMediaPlayer iMediaPlayer) {
+                iMediaPlayer.seekTo(0);
+                iMediaPlayer.start();
+            }
+        });
+
         mScaledTouchSlop = ViewConfiguration.get(getApplicationContext()).getScaledTouchSlop();
         ijkPlayer.setOnTouchListener(new FloatingOnTouchListener());
-        FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(320,
-                180);
-        ijkPlayer.surfaceView.setBackgroundColor(Color.BLACK);
-        ijkPlayer.surfaceView.setLayoutParams(layoutParams1);
+
         windowManager.addView(ijkPlayer,layoutParams);
         return super.onStartCommand(intent, flags, startId);
     }
