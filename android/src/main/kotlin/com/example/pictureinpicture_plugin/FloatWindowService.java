@@ -1,4 +1,5 @@
 package com.example.pictureinpicture_plugin;
+import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Color;
@@ -21,8 +22,11 @@ import tv.danmaku.ijk.media.player.IMediaPlayer;
 
 public class FloatWindowService extends Service {
     public static final String ACTION_FOLLOW_TOUCH = "action_follow_touch";
+    Activity baseActivity;
     WindowManager windowManager;
     WindowManager.LayoutParams layoutParams;
+    RelativeLayout relativeLayout;
+    VideoPlayerIJK ijkPlayer;
     int videoWidht;
     @Override
     public void onCreate() {
@@ -81,8 +85,10 @@ public class FloatWindowService extends Service {
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public int onStartCommand(final Intent intent, int flags, int startId) {
 
+
+        remove();
 
 //        IjkVideoView videoView = (IjkVideoView) inflater.inflate(R.layout.follow_touch_view,null);
 //
@@ -99,9 +105,9 @@ public class FloatWindowService extends Service {
         LayoutInflater layoutInflater = LayoutInflater.from(getApplicationContext());
         //这里使用的是Demo中提供的AndroidMediaController类控制播放相关操作
 
-        final RelativeLayout relativeLayout = (RelativeLayout) layoutInflater.inflate(R.layout.follow_touch_view,null);
+        relativeLayout = (RelativeLayout) layoutInflater.inflate(R.layout.follow_touch_view,null);
         String url = intent.getStringExtra("url");
-        final VideoPlayerIJK ijkPlayer = relativeLayout.findViewById(R.id.ijk_player);
+        ijkPlayer = relativeLayout.findViewById(R.id.ijk_player);
         ijkPlayer.setVideoPath(url);
         ijkPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
             @Override
@@ -121,7 +127,6 @@ public class FloatWindowService extends Service {
                 mp.start();
             }
         });
-
         ijkPlayer.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(IMediaPlayer mp) {
@@ -134,6 +139,15 @@ public class FloatWindowService extends Service {
         DisplayMetrics outMetrics = new DisplayMetrics();
         windowManager.getDefaultDisplay().getMetrics(outMetrics);
         relativeLayout.setOnTouchListener(new FloatingOnTouchListener());
+        relativeLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+
+                Intent intent = getApplicationContext().getPackageManager().getLaunchIntentForPackage(getApplicationContext().getPackageName());
+                getApplicationContext().startActivity(intent);
+                return false;
+            }
+        });
         FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT);
 
@@ -146,7 +160,7 @@ public class FloatWindowService extends Service {
             @Override
             public void onClick(View view) {
 
-                remove(relativeLayout);
+                remove();
             }
         });
 
@@ -161,9 +175,18 @@ public class FloatWindowService extends Service {
         return null;
     }
 
-    public void remove(RelativeLayout relativeLayout) {
+    public void remove() {
         if (relativeLayout != null && windowManager != null) {
+
+            DisplayMetrics outMetrics = new DisplayMetrics();
+            windowManager.getDefaultDisplay().getMetrics(outMetrics);
+            layoutParams.x =  outMetrics.widthPixels - videoWidht;
+            layoutParams.y = outMetrics.heightPixels - (videoWidht/16*9) - 150;
+
             windowManager.removeView(relativeLayout);
+            ijkPlayer.reset();
+            relativeLayout = null;
+
         }
     }
 

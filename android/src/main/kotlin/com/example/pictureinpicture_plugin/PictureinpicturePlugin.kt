@@ -58,6 +58,7 @@ class PictureinpicturePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       print(call.arguments)
       val arr:ArrayList<Any> = call.arguments as ArrayList<Any>;
       print(arr[0])
+
       intent.putExtra("url", arr[0] as String);
       intent.action = FloatWindowService.ACTION_FOLLOW_TOUCH
       flutterActivity.startService(intent)
