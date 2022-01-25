@@ -1,24 +1,21 @@
 package com.example.pictureinpicture_plugin;
-
-import android.app.ActionBar;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.FrameLayout;
-
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 
 
@@ -26,6 +23,7 @@ public class FloatWindowService extends Service {
     public static final String ACTION_FOLLOW_TOUCH = "action_follow_touch";
     WindowManager windowManager;
     WindowManager.LayoutParams layoutParams;
+    int videoWidht;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -41,63 +39,45 @@ public class FloatWindowService extends Service {
         layoutParams.format = PixelFormat.TRANSPARENT;
         layoutParams.gravity = Gravity.TOP | Gravity.LEFT;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-        layoutParams.width = 320;
-        layoutParams.height = 180;
+
         DisplayMetrics outMetrics = new DisplayMetrics();
         windowManager.getDefaultDisplay().getMetrics(outMetrics);
-        layoutParams.x =  outMetrics.widthPixels - 320;
-        layoutParams.y = outMetrics.heightPixels - 180 - 150;
+        videoWidht = outMetrics.widthPixels/2;
+        layoutParams.x =  outMetrics.widthPixels - videoWidht;
+        layoutParams.y = outMetrics.heightPixels - (videoWidht/16*9) - 150;
+
+        layoutParams.width = videoWidht;
+        layoutParams.height = videoWidht/16*9;
+
     }
-    private int mScaledTouchSlop;
 
     private class FloatingOnTouchListener implements View.OnTouchListener {
-        private float mLastY;
-        private float mLastX;
-        private float mDownY;
-        private float mDownX;
+        private int x;
+        private int y;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            float x = event.getRawX();
-            float y = event.getRawY();
+        public boolean onTouch(View view, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    mDownX = x;
-                    mDownY = y;
-                    mLastX = x;
-                    mLastY = y;
+                    x = (int) event.getRawX();
+                    y = (int) event.getRawY();
                     break;
                 case MotionEvent.ACTION_MOVE:
-
-                    float moveX = x - mLastX;
-                    float moveY = y - mLastY;
-
-                    layoutParams.x += moveX;
-                    layoutParams.y += moveY;
-
-                    windowManager.updateViewLayout(v, layoutParams);
-
-                    mLastX = x;
-                    mLastY = y;
+                    int nowX = (int) event.getRawX();
+                    int nowY = (int) event.getRawY();
+                    int movedX = nowX - x;
+                    int movedY = nowY - y;
+                    x = nowX;
+                    y = nowY;
+                    layoutParams.x = layoutParams.x + movedX;
+                    layoutParams.y = layoutParams.y + movedY;
+                    windowManager.updateViewLayout(view, layoutParams);
                     break;
-                case MotionEvent.ACTION_UP:
-                    float disX = x - mDownX;
-                    float disY = y - mDownY;
-                    double sqrt = Math.sqrt(Math.pow(disX, 2) + Math.pow(disY, 2));
-//                    if (sqrt < mScaledTouchSlop) {
-//                        jumpHome();
-//                    }
+                default:
                     break;
             }
-
-            return false;
+            return true;
         }
-    }
-    private void jumpHome() {
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_HOME);
-        getApplicationContext().startActivity(intent);
     }
 
     @Override
@@ -119,8 +99,9 @@ public class FloatWindowService extends Service {
         LayoutInflater layoutInflater = LayoutInflater.from(getApplicationContext());
         //这里使用的是Demo中提供的AndroidMediaController类控制播放相关操作
 
-        final VideoPlayerIJK ijkPlayer = (VideoPlayerIJK) layoutInflater.inflate(R.layout.follow_touch_view,null);
+        final RelativeLayout relativeLayout = (RelativeLayout) layoutInflater.inflate(R.layout.follow_touch_view,null);
         String url = intent.getStringExtra("url");
+        final VideoPlayerIJK ijkPlayer = relativeLayout.findViewById(R.id.ijk_player);
         ijkPlayer.setVideoPath(url);
         ijkPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
             @Override
@@ -129,13 +110,14 @@ public class FloatWindowService extends Service {
                 float h = mp.getVideoHeight();
                 float scale = w/h;
 
-                FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(320,
-                        (int) (320/scale));
+
+                layoutParams.width = videoWidht;
+                layoutParams.height =  (int) (videoWidht/scale);
+
+
                 ijkPlayer.surfaceView.setBackgroundColor(Color.TRANSPARENT);
-                ijkPlayer.surfaceView.setLayoutParams(layoutParams1);
-                layoutParams.width = 320;
-                layoutParams.height =  (int) (320/scale);
-                windowManager.updateViewLayout(ijkPlayer, layoutParams);
+
+                windowManager.updateViewLayout(relativeLayout, layoutParams);
                 mp.start();
             }
         });
@@ -149,13 +131,27 @@ public class FloatWindowService extends Service {
 
             }
         });
-        mScaledTouchSlop = ViewConfiguration.get(getApplicationContext()).getScaledTouchSlop();
-        ijkPlayer.setOnTouchListener(new FloatingOnTouchListener());
-        FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(320,
-                180);
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getMetrics(outMetrics);
+        relativeLayout.setOnTouchListener(new FloatingOnTouchListener());
+        FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT);
+
         ijkPlayer.surfaceView.setBackgroundColor(Color.BLACK);
         ijkPlayer.surfaceView.setLayoutParams(layoutParams1);
-        windowManager.addView(ijkPlayer,layoutParams);
+
+
+        ImageView close_btn = relativeLayout.findViewById(R.id.close_btn);
+        close_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                remove(relativeLayout);
+            }
+        });
+
+        windowManager.addView(relativeLayout,layoutParams);
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -164,4 +160,11 @@ public class FloatWindowService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
+
+    public void remove(RelativeLayout relativeLayout) {
+        if (relativeLayout != null && windowManager != null) {
+            windowManager.removeView(relativeLayout);
+        }
+    }
+
 }
