@@ -1,12 +1,15 @@
 package com.example.pictureinpicture_plugin;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -17,6 +20,9 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+
+import java.util.List;
+
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 
 
@@ -56,11 +62,36 @@ public class FloatWindowService extends Service {
     }
 
     private class FloatingOnTouchListener implements View.OnTouchListener {
+
+        final GestureDetector gestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
+
+            /**
+             * 发生确定的单击时执行
+             * @param e
+             * @return
+             */
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {//单击事件
+
+                if (!isAppRunningForeground(getApplicationContext())) {
+
+                    remove();
+                    Intent intent = getApplicationContext().getPackageManager().getLaunchIntentForPackage(getApplicationContext().getPackageName());
+                    getApplicationContext().startActivity(intent);
+                }
+
+                return super.onSingleTapConfirmed(e);
+            }
+
+        });
+
         private int x;
         private int y;
 
         @Override
         public boolean onTouch(View view, MotionEvent event) {
+
+            gestureDetector.onTouchEvent(event);
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     x = (int) event.getRawX();
@@ -139,15 +170,6 @@ public class FloatWindowService extends Service {
         DisplayMetrics outMetrics = new DisplayMetrics();
         windowManager.getDefaultDisplay().getMetrics(outMetrics);
         relativeLayout.setOnTouchListener(new FloatingOnTouchListener());
-        relativeLayout.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-
-                Intent intent = getApplicationContext().getPackageManager().getLaunchIntentForPackage(getApplicationContext().getPackageName());
-                getApplicationContext().startActivity(intent);
-                return false;
-            }
-        });
         FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT);
 
@@ -189,5 +211,19 @@ public class FloatWindowService extends Service {
 
         }
     }
+    private boolean isAppRunningForeground(Context context) {
+        ActivityManager activityManager = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
 
+        assert activityManager != null;
+        List<ActivityManager.RunningAppProcessInfo> runningAppProcessList = activityManager.getRunningAppProcesses();
+
+        for (ActivityManager.RunningAppProcessInfo runningAppProcessInfo : runningAppProcessList) {
+            if (runningAppProcessInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+                    && runningAppProcessInfo.processName.equals(context.getApplicationInfo().processName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
