@@ -43,4 +43,6 @@ dependencies {
 
     implementation 'com.befovy.fijkplayer:fijkplayer-full:0.7.16'
 
+    implementation 'com.blankj:utilcode:1.22.7'
+
 }
