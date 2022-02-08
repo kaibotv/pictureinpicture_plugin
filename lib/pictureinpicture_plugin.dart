@@ -40,6 +40,15 @@ class PictureinpicturePlugin {
     return false;
   }
 
+
+  static void go_setting() async {
+    await _channel.invokeMethod('go_setting');
+  }
+
+  static Future<bool> get_permission() async {
+    return await _channel.invokeMethod('get_permission');
+  }
+
   //释放
   static Future pictureInPictureDispost() async {
     await _channel.invokeMethod('PIPdispost');

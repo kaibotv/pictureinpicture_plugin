@@ -67,12 +67,27 @@ class PictureinpicturePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
                 }
             } else {
-                TODO("VERSION.SDK_INT < M")
 
               startService(call)
             }
 
-        } else {
+        }else if (call.method == "get_permission") {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                result.success(Settings.canDrawOverlays(flutterActivity))
+            }else {
+
+                result.success(true)
+            }
+
+
+        } else if (call.method == "go_setting") {
+
+            FloatWindowParamManager.tryJumpToPermissionPage(flutterActivity)
+
+
+        }  else {
             result.notImplemented()
         }
     }
